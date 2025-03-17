@@ -5,10 +5,10 @@ on:
     branches:
       - main
     paths:
-      - 'openscad/**/*.scad'
+      - '**/*.scad'
   pull_request:
     paths:
-      - 'openscad/**/*.scad'
+      - '**/*.scad'
   workflow_dispatch: # Allows manual triggering for releases
 
 jobs:
