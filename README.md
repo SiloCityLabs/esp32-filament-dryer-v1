@@ -55,8 +55,8 @@ This project is perfect for **makers, 3D printing enthusiasts, and DIYers** who 
 ## TODO:
 
 - [ ] Upload Sketch Designs
-- [ ] Working Test pipeline
-- [ ] Working Release Pipeline
+- [x] Working Test pipeline
+- [x] Working Release Pipeline
 - [ ] Link to dikale pcb, store, tindie
 - [ ] Create BOM
 - [ ] Create Test Lid openscad
