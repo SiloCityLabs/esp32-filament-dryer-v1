@@ -1,0 +1,73 @@
+name: Build and Release OpenSCAD STL Files
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/*.scad'
+  pull_request:
+    paths:
+      - '**/*.scad'
+  workflow_dispatch: # Allows manual triggering for releases
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install OpenSCAD
+        run: sudo apt-get install -y openscad
+
+      - name: Create output directory
+        run: mkdir -p stl-files
+
+      - name: Convert SCAD to STL
+        run: |
+          for file in diy-dryer-praki/*.scad; do
+            filename=$(basename "$file" .scad)
+            openscad -o "stl-files/${filename}.stl" -D '$fn=5' "$file"
+          done
+
+      - name: Upload STL artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: stl-binaries
+          path: stl-files/
+          retention-days: 7  # Keeps artifacts for debugging/testing
+
+  release:
+    if: github.event_name == 'workflow_dispatch' # Only run manually
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download STL artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: stl-binaries
+          path: stl-files/
+
+      - name: Verify downloaded files
+        run: ls -lh stl-files/
+
+      - name: Read version from file
+        id: get_version
+        run: |
+          VERSION=$(cat VERSION | tr -d ' \t\n\r')
+          echo "Version: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: stl-files/*
+          tag_name: v${{ env.version }}
+          release_name: OpenSCAD STL Release v${{ env.version }}
+          draft: true
+          prerelease: false
