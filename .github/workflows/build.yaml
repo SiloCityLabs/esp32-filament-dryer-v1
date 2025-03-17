@@ -5,10 +5,10 @@ on:
     branches:
       - main
     paths:
-      - '**/*.scad'
+      - 'openscad/**/*.scad'
   pull_request:
     paths:
-      - '**/*.scad'
+      - 'openscad/**/*.scad'
   workflow_dispatch: # Allows manual triggering for releases
 
 jobs:
@@ -26,7 +26,7 @@ jobs:
 
       - name: Convert SCAD to STL
         run: |
-          for file in diy-dryer-praki/*.scad; do
+          for file in openscad/*.scad; do
             filename=$(basename "$file" .scad)
             openscad -o "stl-files/${filename}.stl" -D '$fn=5' "$file"
           done

@@ -74,4 +74,4 @@ This project is perfect for **makers, 3D printing enthusiasts, and DIYers** who 
 
 ## License
 
-This project is licensed under the Creative Commons Attribution-ShareAlike 4.0 International License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the Creative Commons Attribution-ShareAlike 4.0 International License - see the [LICENSE](LICENSE) file for details
