@@ -1,6 +1,6 @@
 /*
 fan and heater cartridge
-
+hello
 */
 
 // Belfry OpenScad Library v2
@@ -90,14 +90,6 @@ module fan_box() {
         
     }
     
-    module fan_screw_hole() {
-        cyl(
-            l=fan_box_bottom_thickness*3,
-            d=fan_screw_diam,
-            anchor=CENTER
-        );
-    }
-    
     tunnel_buffer = 1;
     fan_output_from_floor = 2.2;
     fan_output_y_from_center = -(heater_tunnel_h-fan_output_h)/2+fan_output_from_floor;
@@ -115,5 +107,13 @@ module fan_box() {
     translate([ -fan_output_x_from_center, -fan_box_inner_l/2+fan_overall+box_buffer+tunnel_buffer, fan_box_bottom_thickness ]) {
         cuboid([ fan_output_w+fan_box_wall_thickness*2, fan_output_w, fan_output_from_floor ], anchor=BOTTOM+FRONT );
     }
+    
+}
 
+module fan_screw_hole() {
+    cyl(
+        l=fan_box_bottom_thickness*3,
+        d=fan_screw_diam,
+        anchor=CENTER
+    );
 }

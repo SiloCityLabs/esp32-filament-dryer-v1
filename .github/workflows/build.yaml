@@ -17,6 +17,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+            submodules: true  # Fetch submodules
+            fetch-depth: 0  # Ensure full clone for submodules
 
       - name: Install OpenSCAD
         run: sudo apt-get install -y openscad
