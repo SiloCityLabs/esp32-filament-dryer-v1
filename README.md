@@ -52,21 +52,6 @@ This project is perfect for **makers, 3D printing enthusiasts, and DIYers** who 
 
 [Purchase PCB Here](https://shop.silocitylabs.com/products/3dgenius-dikale-firos-smart-pcb-esp32-conversion-preorder)
 
-## TODO:
-
-- [ ] Upload Sketch Designs
-- [x] Working Test pipeline
-- [x] Working Release Pipeline
-- [ ] Link to dikale pcb, store, tindie
-- [ ] Create BOM
-- [ ] Create Test Lid openscad
-- [ ] Create Top Case openscad
-- [ ] Create Top Lid openscad
-- [ ] Create bottom Case openscad
-- [ ] Create Bottom Lid openscad
-- [ ] Create DIY Video
-- [ ] List on store
-
 ## Images
 
 ![PCB Front](https://shop.silocitylabs.com/cdn/shop/files/dikale-esp32-pcb-front.webp "PCB Front")
