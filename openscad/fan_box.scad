@@ -12,20 +12,24 @@ include <BOSL2/shapes3d.scad>
 $fn = 50;
 
 /* [box] */
-fan_box_inner_w = 53.0;
+fan_box_inner_w = 55.0;
 fan_box_inner_h = 17.0;
 fan_box_inner_l = 200.0;
 //needs to be thick enough for screws to bite into, or to hold hex nuts
-fan_box_bottom_thickness = 2.0;
-fan_box_wall_thickness = 0.6; //1.0;
+fan_box_bottom_thickness = 1.4;  // [0.4:0.1:2] 
+fan_box_wall_thickness = 0.6; // [0.4:0.1:2] 
 
 
 /* [fan] */
 //fan screw offset from centerline
-fan_screw_x=22.5;
-fan_screw_y=22.5;
+// screw 1 is next to the air outlet
+fan_screw_1x=21.5;
+fan_screw_1y=17.5;
+// screw 2 is behind the air outlet
+fan_screw_2x=22.0; // there's a plastic bit that sticks out so this needs a little clearance
+fan_screw_2y=20.3;
 //fan overall width
-fan_overall = 50.0;
+fan_overall = 51.0;
 fan_screw_diam = 3.6;
 //hole on bottom
 fan_intake_diam = 45.0;
@@ -47,8 +51,24 @@ heater_tunnel_h = 24;
 heater_screw_diam = 2.0;
 heater_screw_sep = 90.0;
 
+fan_debug_cut=false;
+difference(){
+    fan_box();
 
-fan_box();
+    if(fan_debug_cut)
+    debug_cuts();
+}
+
+module debug_cuts(){
+    arbitrary_gap=5;
+    translate([0,-fan_box_inner_l/2+fan_overall+arbitrary_gap,0])
+    cuboid([500,500,500], anchor=FRONT);
+
+
+    arbitrary_gap2=1;
+    translate([0,0,fan_box_bottom_thickness+arbitrary_gap2])
+    cuboid([500,500,500], anchor=BOTTOM);
+}
 
 module fan_box() {
 
@@ -75,9 +95,10 @@ module fan_box() {
         // fan cuts
         translate([0,-fan_box_inner_l/2+fan_overall/2+box_buffer,fan_box_bottom_thickness]) {
             // fan screw holes
-            translate([fan_screw_x,fan_screw_x,0])
+            translate([fan_screw_1x,fan_screw_1y,0])
             fan_screw_hole();
-            translate([-fan_screw_x,-fan_screw_x,0])
+            //fan_screw_2x
+            translate([-fan_screw_2x,-fan_screw_2y,0])
             fan_screw_hole();
             
             //fan intake hole
@@ -95,7 +116,7 @@ module fan_box() {
     fan_output_y_from_center = -(heater_tunnel_h-fan_output_h)/2+fan_output_from_floor;
     // fan tunnel. Take air from fan to heater
     color(tunnel_color)
-    translate([0,fan_overall + box_buffer+tunnel_buffer,heater_tunnel_h/2+fan_box_bottom_thickness+fan_box_wall_thickness])
+    translate([ 0, fan_overall + box_buffer+tunnel_buffer, heater_tunnel_h/2+fan_box_bottom_thickness+fan_box_wall_thickness ])
     rotate([90,0,0])
     rect_tube(
         isize1=[heater_tunnel_w,heater_tunnel_h], isize2=[fan_output_w,fan_output_h],
