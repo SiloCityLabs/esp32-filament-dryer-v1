@@ -111,24 +111,12 @@ module fan_box() {
         
     }
     
-    tunnel_buffer = 1;
-    fan_output_from_floor = 2.2;
-    fan_output_y_from_center = -(heater_tunnel_h-fan_output_h)/2+fan_output_from_floor;
-    // fan tunnel. Take air from fan to heater
-    color(tunnel_color)
-    translate([ 0, fan_overall + box_buffer+tunnel_buffer, heater_tunnel_h/2+fan_box_bottom_thickness+fan_box_wall_thickness ])
-    rotate([90,0,0])
-    rect_tube(
-        isize1=[heater_tunnel_w,heater_tunnel_h], isize2=[fan_output_w,fan_output_h],
-        wall=fan_box_wall_thickness, h=tunnel_l,
-        shift=[-fan_output_x_from_center, fan_output_y_from_center]
-        //anchor=FRONT
-    );
-    // fill in the underneath of fan tunnel so tunnel attaches to box
-    translate([ -fan_output_x_from_center, -fan_box_inner_l/2+fan_overall+box_buffer+tunnel_buffer, fan_box_bottom_thickness ]) {
-        cuboid([ fan_output_w+fan_box_wall_thickness*2, fan_output_w, fan_output_from_floor ], anchor=BOTTOM+FRONT );
-    }
+    fan_tunnel();
     
+    air_ramp();
+}
+
+module air_ramp(){
     // air ramp. Turn air 90deg
     //TODO: try making a warped rect-tube programmatically
     ramp_radius = fan_box_inner_h;
@@ -147,6 +135,27 @@ module fan_box() {
     // straight up wall
     translate([0,fan_box_inner_l/2,fan_box_bottom_thickness+ramp_radius])
     cuboid([fan_box_inner_w,fan_box_wall_thickness,ramp_radius], anchor=BOTTOM+FRONT);
+}
+
+// widens from the from output size to the heater size
+module fan_tunnel(){
+    tunnel_buffer = 1;
+    fan_output_from_floor = 2.2;
+    fan_output_y_from_center = -(heater_tunnel_h-fan_output_h)/2+fan_output_from_floor;
+    // fan tunnel. Take air from fan to heater
+    color(tunnel_color)
+    translate([ 0, fan_overall + box_buffer+tunnel_buffer, heater_tunnel_h/2+fan_box_bottom_thickness+fan_box_wall_thickness ])
+    rotate([90,0,0])
+    rect_tube(
+        isize1=[heater_tunnel_w,heater_tunnel_h], isize2=[fan_output_w,fan_output_h],
+        wall=fan_box_wall_thickness, h=tunnel_l,
+        shift=[-fan_output_x_from_center, fan_output_y_from_center]
+        //anchor=FRONT
+    );
+    // fill in the underneath of fan tunnel so tunnel attaches to box
+    translate([ -fan_output_x_from_center, -fan_box_inner_l/2+fan_overall+box_buffer+tunnel_buffer, fan_box_bottom_thickness ]) {
+        cuboid([ fan_output_w+fan_box_wall_thickness*2, fan_output_w, fan_output_from_floor ], anchor=BOTTOM+FRONT );
+    }
 }
 
 module quarter_pipe(r = 5, h = 10, wall = 1) {
