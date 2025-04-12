@@ -129,6 +129,34 @@ module fan_box() {
         cuboid([ fan_output_w+fan_box_wall_thickness*2, fan_output_w, fan_output_from_floor ], anchor=BOTTOM+FRONT );
     }
     
+    // air ramp. Turn air 90deg
+    //TODO: try making a warped rect-tube programmatically
+    ramp_radius = fan_box_inner_h;
+    translate([0,fan_box_inner_l/2-ramp_radius,fan_box_bottom_thickness + ramp_radius])
+    rotate([0,90,0]) {
+        // outer, wider, ramp
+        quarter_pipe(r=ramp_radius, h = fan_box_inner_w, wall=fan_box_wall_thickness);
+
+        // lid of ramp tunnel
+        translate([-ramp_radius,-ramp_radius,0])
+        quarter_pipe(r=ramp_radius, h = fan_box_inner_w, wall=fan_box_wall_thickness);
+        
+        //endcaps
+        *cyl(h = fan_box_wall_thickness, r = ramp_radius, anchor=CENTER );
+    }
+    // straight up wall
+    translate([0,fan_box_inner_l/2,fan_box_bottom_thickness+ramp_radius])
+    cuboid([fan_box_inner_w,fan_box_wall_thickness,ramp_radius], anchor=BOTTOM+FRONT);
+}
+
+module quarter_pipe(r = 5, h = 10, wall = 1) {
+    difference(){
+        tube(h=h, ir = r, wall = wall);
+        //remove everything but 1/4 of the tube
+        removal_size = (r > h) ? r+0.1 : h+0.1 ;
+        cuboid(size = removal_size, anchor=BACK);
+        cuboid(size = removal_size, anchor=RIGHT);
+    }
 }
 
 module fan_screw_hole() {
