@@ -13,8 +13,8 @@ $fn = 50;
 
 /* [box] */
 fan_box_inner_w = 55.0;
-fan_box_inner_h = 17.0;
-fan_box_inner_l = 200.0;
+fan_box_inner_h = 30.0;
+fan_box_inner_l = 150.0;
 //needs to be thick enough for screws to bite into, or to hold hex nuts
 fan_box_bottom_thickness = 1.4;  // [0.4:0.1:2] 
 fan_box_wall_thickness = 0.6; // [0.4:0.1:2] 
@@ -39,10 +39,8 @@ fan_output_h = 15.0;
 fan_output_x_from_center = fan_overall/2 - fan_output_w/2;
 //todo: align tunnel vertically, then adjust this y-shift
 fan_output_y_from_center = 0;
+// space between back wall and fan
 box_buffer = 3;
-// distance between fan output and heater input
-tunnel_l = 90;
-tunnel_color = "seagreen";
 
 /* [heater]  */
 heater_tunnel_w = 52;
@@ -50,6 +48,16 @@ heater_tunnel_h = 24;
 
 heater_screw_diam = 2.0;
 heater_screw_sep = 90.0;
+
+/* air ramp */
+
+//space between fan and tunnel
+tunnel_buffer = 1;
+// distance between fan output and heater input
+ramp_radius = heater_tunnel_h;
+ramp_l = ramp_radius * 2;
+tunnel_l = fan_box_inner_l - ramp_l - fan_overall - box_buffer - tunnel_buffer;
+tunnel_color = "seagreen";
 
 fan_debug_cut=false;
 difference(){
@@ -63,7 +71,6 @@ module debug_cuts(){
     arbitrary_gap=5;
     translate([0,-fan_box_inner_l/2+fan_overall+arbitrary_gap,0])
     cuboid([500,500,500], anchor=FRONT);
-
 
     arbitrary_gap2=1;
     translate([0,0,fan_box_bottom_thickness+arbitrary_gap2])
@@ -119,7 +126,6 @@ module fan_box() {
 module air_ramp(){
     // air ramp. Turn air 90deg
     //TODO: try making a warped rect-tube programmatically
-    ramp_radius = heater_tunnel_h;
     translate([0,fan_box_inner_l/2-ramp_radius,fan_box_bottom_thickness + ramp_radius])
     rotate([0,90,0]) {
         // outer, wider, ramp
@@ -130,7 +136,7 @@ module air_ramp(){
         quarter_pipe(r=ramp_radius, h = fan_box_inner_w, wall=fan_box_wall_thickness);
         
         //endcaps
-        *cyl(h = fan_box_wall_thickness, r = ramp_radius, anchor=CENTER );
+        //*cyl(h = fan_box_wall_thickness, r = ramp_radius, anchor=CENTER );
     }
     // straight up wall
     translate([0,fan_box_inner_l/2,fan_box_bottom_thickness+ramp_radius])
@@ -139,8 +145,8 @@ module air_ramp(){
 
 // widens from the from output size to the heater size
 module fan_tunnel(){
-    tunnel_buffer = 1;
     fan_output_from_floor = 2.2;
+    tunnel_rounding = 4.0;
     fan_output_y_from_center = -(heater_tunnel_h-fan_output_h)/2+fan_output_from_floor;
     // fan tunnel. Take air from fan to heater
     // aligning this is a little whack
@@ -151,8 +157,10 @@ module fan_tunnel(){
     rect_tube(
         isize1=[heater_tunnel_w,heater_tunnel_h], isize2=[fan_output_w,fan_output_h],
         wall=fan_box_wall_thickness, h=tunnel_l,
-        shift=[-fan_output_x_from_center, fan_output_y_from_center]
-        ,anchor=BOTTOM // I want to achor by the top for easy alignment, but "shift" moves the top
+        shift=[-fan_output_x_from_center, fan_output_y_from_center],
+        irounding1=tunnel_rounding, // a little rounding to help bridging
+        irounding2=tunnel_rounding/4,
+        anchor=BOTTOM // I want to achor by the top for easy alignment, but "shift" moves the top
     );
     // support the underneath of fan tunnel so tunnel attaches to box
     // TODO: this is a plain cube, which only supports the intake and will intersect if made any bigger. Make it angled to support the whole base
