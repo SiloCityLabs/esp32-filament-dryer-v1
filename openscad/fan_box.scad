@@ -41,7 +41,7 @@ fan_output_x_from_center = fan_overall/2 - fan_output_w/2;
 fan_output_y_from_center = 0;
 box_buffer = 3;
 // distance between fan output and heater input
-tunnel_l = 100;
+tunnel_l = 90;
 tunnel_color = "seagreen";
 
 /* [heater]  */
@@ -119,7 +119,7 @@ module fan_box() {
 module air_ramp(){
     // air ramp. Turn air 90deg
     //TODO: try making a warped rect-tube programmatically
-    ramp_radius = fan_box_inner_h;
+    ramp_radius = heater_tunnel_h;
     translate([0,fan_box_inner_l/2-ramp_radius,fan_box_bottom_thickness + ramp_radius])
     rotate([0,90,0]) {
         // outer, wider, ramp
@@ -143,16 +143,19 @@ module fan_tunnel(){
     fan_output_from_floor = 2.2;
     fan_output_y_from_center = -(heater_tunnel_h-fan_output_h)/2+fan_output_from_floor;
     // fan tunnel. Take air from fan to heater
+    // aligning this is a little whack
+    tunnel_y = -fan_box_inner_l/2 + tunnel_l + fan_overall + box_buffer+tunnel_buffer;
     color(tunnel_color)
-    translate([ 0, fan_overall + box_buffer+tunnel_buffer, heater_tunnel_h/2+fan_box_bottom_thickness+fan_box_wall_thickness ])
+    translate([ 0, tunnel_y, heater_tunnel_h/2+fan_box_bottom_thickness+fan_box_wall_thickness ])
     rotate([90,0,0])
     rect_tube(
         isize1=[heater_tunnel_w,heater_tunnel_h], isize2=[fan_output_w,fan_output_h],
         wall=fan_box_wall_thickness, h=tunnel_l,
         shift=[-fan_output_x_from_center, fan_output_y_from_center]
-        //anchor=FRONT
+        ,anchor=BOTTOM // I want to achor by the top for easy alignment, but "shift" moves the top
     );
-    // fill in the underneath of fan tunnel so tunnel attaches to box
+    // support the underneath of fan tunnel so tunnel attaches to box
+    // TODO: this is a plain cube, which only supports the intake and will intersect if made any bigger. Make it angled to support the whole base
     translate([ -fan_output_x_from_center, -fan_box_inner_l/2+fan_overall+box_buffer+tunnel_buffer, fan_box_bottom_thickness ]) {
         cuboid([ fan_output_w+fan_box_wall_thickness*2, fan_output_w, fan_output_from_floor ], anchor=BOTTOM+FRONT );
     }
