@@ -80,14 +80,24 @@ module debug_cuts(){
 module fan_box() {
 
     // box and fan cuts
+    color("azure")
     difference() {
         //box
+        *
         cuboid(
             [ fan_box_inner_w+fan_box_wall_thickness*2, 
             fan_box_inner_l+fan_box_wall_thickness*2, 
             fan_box_inner_h+fan_box_wall_thickness+fan_box_bottom_thickness ],
             anchor=BOTTOM
         );
+        //floor only, box disabled
+        cuboid(
+            [ fan_box_inner_w+fan_box_wall_thickness*2, 
+            fan_box_inner_l+fan_box_wall_thickness*2, 
+            fan_box_bottom_thickness ],
+            anchor=BOTTOM
+        );
+
         
         //empty the box
         //bottom is thicker for screws to bite into
@@ -162,10 +172,16 @@ module fan_tunnel(){
         irounding2=tunnel_rounding/4,
         anchor=BOTTOM // I want to achor by the top for easy alignment, but "shift" moves the top
     );
+
     // support the underneath of fan tunnel so tunnel attaches to box
-    // TODO: this is a plain cube, which only supports the intake and will intersect if made any bigger. Make it angled to support the whole base
-    translate([ -fan_output_x_from_center, -fan_box_inner_l/2+fan_overall+box_buffer+tunnel_buffer, fan_box_bottom_thickness ]) {
-        cuboid([ fan_output_w+fan_box_wall_thickness*2, fan_output_w, fan_output_from_floor ], anchor=BOTTOM+FRONT );
+    translate([ -fan_output_x_from_center, -fan_box_inner_l/2+fan_overall+box_buffer+tunnel_buffer, fan_box_bottom_thickness + fan_output_from_floor/2 ]) {
+        rotate([-90,0,0])
+        prismoid(
+            size1=[fan_output_w+fan_box_wall_thickness*2,fan_output_from_floor],
+            size2=[heater_tunnel_w+fan_box_wall_thickness*2,0],
+            h=tunnel_l,
+            shift=[fan_output_x_from_center, fan_output_from_floor/2]
+        );
     }
 }
 
