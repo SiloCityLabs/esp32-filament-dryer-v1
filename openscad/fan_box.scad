@@ -91,12 +91,22 @@ module fan_box() {
             anchor=BOTTOM
         );
         //floor only, box disabled
-        cuboid(
+        *cuboid(
             [ fan_box_inner_w+fan_box_wall_thickness*2, 
             fan_box_inner_l+fan_box_wall_thickness*2, 
             fan_box_bottom_thickness ],
             anchor=BOTTOM
         );
+        //floor and one side for sideways printing
+        translate([-fan_box_wall_thickness,0,0])
+        cuboid(
+            [ fan_box_inner_w+fan_box_wall_thickness, 
+            fan_box_inner_l+fan_box_wall_thickness*2, 
+            fan_box_inner_h+fan_box_wall_thickness+fan_box_bottom_thickness ],
+            anchor=BOTTOM
+        );
+
+
 
         
         //empty the box
@@ -142,7 +152,7 @@ module air_ramp(){
         quarter_pipe(r=ramp_radius, h = fan_box_inner_w, wall=fan_box_wall_thickness);
 
         // lid of ramp tunnel
-        translate([-ramp_radius,-ramp_radius,0])
+        translate([-ramp_radius-fan_box_wall_thickness,-ramp_radius,0])
         quarter_pipe(r=ramp_radius, h = fan_box_inner_w, wall=fan_box_wall_thickness);
         
         //endcaps
@@ -161,20 +171,37 @@ module fan_tunnel(){
     // fan tunnel. Take air from fan to heater
     // aligning this is a little whack
     tunnel_y = -fan_box_inner_l/2 + tunnel_l + fan_overall + box_buffer+tunnel_buffer;
+    // arch this for printability
+    bridge_rounding_out = heater_tunnel_h / 2;
+    bridge_rounding_in = fan_output_h / 2;
     color(tunnel_color)
     translate([ 0, tunnel_y, heater_tunnel_h/2+fan_box_bottom_thickness+fan_box_wall_thickness ])
     rotate([90,0,0])
     rect_tube(
-        isize1=[heater_tunnel_w,heater_tunnel_h], isize2=[fan_output_w,fan_output_h],
-        wall=fan_box_wall_thickness, h=tunnel_l,
+        isize1=[heater_tunnel_w,heater_tunnel_h], 
+        isize2=[fan_output_w,fan_output_h],
+        wall=fan_box_wall_thickness, 
+        h=tunnel_l,
         shift=[-fan_output_x_from_center, fan_output_y_from_center],
-        irounding1=tunnel_rounding, // a little rounding to help bridging
-        irounding2=tunnel_rounding/4,
+        ichamfer1=[bridge_rounding_out,0,0,bridge_rounding_out],
+        irounding2=[bridge_rounding_in,tunnel_rounding/4,tunnel_rounding/4,bridge_rounding_in],
         anchor=BOTTOM // I want to achor by the top for easy alignment, but "shift" moves the top
     );
 
     // support the underneath of fan tunnel so tunnel attaches to box
     translate([ -fan_output_x_from_center, -fan_box_inner_l/2+fan_overall+box_buffer+tunnel_buffer, fan_box_bottom_thickness + fan_output_from_floor/2 ]) {
+        rotate([-90,0,0])
+        prismoid(
+            size1=[fan_output_w+fan_box_wall_thickness*2,fan_output_from_floor],
+            size2=[heater_tunnel_w+fan_box_wall_thickness*2,0],
+            h=tunnel_l,
+            shift=[fan_output_x_from_center, fan_output_from_floor/2]
+        );
+    }
+
+    // support the side of fan tunnel so tunnel attaches to box (rotated printing)
+    translate([ -fan_output_x_from_center, -fan_box_inner_l/2+fan_overall+box_buffer+tunnel_buffer, fan_box_bottom_thickness + fan_output_from_floor/2 ]) {
+        *
         rotate([-90,0,0])
         prismoid(
             size1=[fan_output_w+fan_box_wall_thickness*2,fan_output_from_floor],
