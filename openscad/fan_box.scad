@@ -165,6 +165,7 @@ module air_ramp(){
 
 // widens from the from output size to the heater size
 module fan_tunnel(){
+fudge=0.5;
     fan_output_from_floor = 2.2;
     tunnel_rounding = 4.0;
     fan_output_y_from_center = -(heater_tunnel_h-fan_output_h)/2+fan_output_from_floor;
@@ -174,42 +175,56 @@ module fan_tunnel(){
     // arch this for printability
     bridge_rounding_out = heater_tunnel_h / 2;
     bridge_rounding_in = fan_output_h / 2;
-    color(tunnel_color)
-    translate([ 0, tunnel_y, heater_tunnel_h/2+fan_box_bottom_thickness+fan_box_wall_thickness ])
+    
+    difference() {
+        tunnel_housing();
+    
+        color("red", 0.4)
+        translate([ 0, tunnel_y, heater_tunnel_h/2+fan_box_bottom_thickness+fan_box_wall_thickness ])
+        rotate([90,0,0])
+        prismoid(
+            size1=[heater_tunnel_w,heater_tunnel_h], 
+            size2=[fan_output_w,fan_output_h],
+            //wall=fan_box_wall_thickness, 
+            h=tunnel_l+fudge,
+            shift=[-fan_output_x_from_center, fan_output_y_from_center],
+            chamfer1=[bridge_rounding_out,0,0,bridge_rounding_out],
+            rounding2=[bridge_rounding_in,tunnel_rounding/4,tunnel_rounding/4,bridge_rounding_in],
+            anchor=BOTTOM // I want to achor by the top for easy alignment, but "shift" moves the top
+        );
+    }
+    
+    module tunnel_housing() {
+        //body
+        translate([0,0+tunnel_buffer+box_buffer-fudge,fan_box_bottom_thickness])
+        cuboid(
+            [fan_box_inner_w,tunnel_l-0.01,fan_box_inner_h],
+            rounding=fan_box_inner_h/8,
+            edges=[BOTTOM+LEFT, BOTTOM+RIGHT],
+            anchor=BOTTOM
+        );
+        
+        // locking indents
+        copy_mirror([1,0,0])
+        translate([fan_box_inner_w/2,0,fan_box_inner_h-intent_below_topline])
+        locking_indent();
+    }
+
+
+}
+
+indent_depth = 0.4;
+//indent_width = 0.4;
+indent_length = 2.0;
+intent_below_topline = 1.0;
+module locking_indent() {
+    color("green")
     rotate([90,0,0])
-    rect_tube(
-        isize1=[heater_tunnel_w,heater_tunnel_h], 
-        isize2=[fan_output_w,fan_output_h],
-        wall=fan_box_wall_thickness, 
-        h=tunnel_l,
-        shift=[-fan_output_x_from_center, fan_output_y_from_center],
-        ichamfer1=[bridge_rounding_out,0,0,bridge_rounding_out],
-        irounding2=[bridge_rounding_in,tunnel_rounding/4,tunnel_rounding/4,bridge_rounding_in],
-        anchor=BOTTOM // I want to achor by the top for easy alignment, but "shift" moves the top
+    cyl(l=indent_length, 
+        r=indent_depth, 
+        rounding=indent_depth/2.1,
+        anchor=CENTER
     );
-
-    // support the underneath of fan tunnel so tunnel attaches to box
-    translate([ -fan_output_x_from_center, -fan_box_inner_l/2+fan_overall+box_buffer+tunnel_buffer, fan_box_bottom_thickness + fan_output_from_floor/2 ]) {
-        rotate([-90,0,0])
-        prismoid(
-            size1=[fan_output_w+fan_box_wall_thickness*2,fan_output_from_floor],
-            size2=[heater_tunnel_w+fan_box_wall_thickness*2,0],
-            h=tunnel_l,
-            shift=[fan_output_x_from_center, fan_output_from_floor/2]
-        );
-    }
-
-    // support the side of fan tunnel so tunnel attaches to box (rotated printing)
-    translate([ -fan_output_x_from_center, -fan_box_inner_l/2+fan_overall+box_buffer+tunnel_buffer, fan_box_bottom_thickness + fan_output_from_floor/2 ]) {
-        *
-        rotate([-90,0,0])
-        prismoid(
-            size1=[fan_output_w+fan_box_wall_thickness*2,fan_output_from_floor],
-            size2=[heater_tunnel_w+fan_box_wall_thickness*2,0],
-            h=tunnel_l,
-            shift=[fan_output_x_from_center, fan_output_from_floor/2]
-        );
-    }
 }
 
 module quarter_pipe(r = 5, h = 10, wall = 1) {
@@ -228,4 +243,12 @@ module fan_screw_hole() {
         d=fan_screw_diam,
         anchor=CENTER
     );
+}
+
+//copy and mirror an object
+module copy_mirror(vec=[0,1,0]){
+    children();
+    if (vec!=undef && vec!=[0,0,0]) {
+        mirror(vec) children();
+    }
 }
