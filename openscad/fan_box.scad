@@ -18,6 +18,7 @@ fan_box_inner_l = 150.0;
 //needs to be thick enough for screws to bite into, or to hold hex nuts
 fan_box_bottom_thickness = 1.4;  // [0.4:0.1:2] 
 fan_box_wall_thickness = 0.6; // [0.4:0.1:2] 
+component_gap = 0.4;
 
 
 /* [fan] */
@@ -106,9 +107,6 @@ module fan_box() {
             anchor=BOTTOM
         );
 
-
-
-        
         //empty the box
         //bottom is thicker for screws to bite into
         translate([0,0,fan_box_bottom_thickness])
@@ -147,8 +145,7 @@ module air_ramp(){
     ramp_y=45;
     ramp_fudge=2;
     difference() {
-        translate([0,fan_box_inner_l/2-ramp_y,fan_box_bottom_thickness])
-        cuboid([fan_box_inner_w,ramp_y,fan_box_inner_h], anchor=BOTTOM+FRONT);
+        ramp_box();
 
         translate([-heater_tunnel_w/2,
             fan_box_inner_l/2-heater_tunnel_h-fan_box_wall_thickness,
@@ -157,8 +154,18 @@ module air_ramp(){
         ramp_negative();
     }
 
+    module ramp_box(){
+
+        translate([0,fan_box_inner_l/2-ramp_y,fan_box_bottom_thickness])
+        cuboid([fan_box_inner_w-component_gap*2,ramp_y,fan_box_inner_h], anchor=BOTTOM+FRONT);
+
+        copy_mirror([1,0,0])
+        translate([fan_box_inner_w/2-component_gap,fan_box_inner_l/2-ramp_y/2,fan_box_inner_h-indent_below_topline])
+        locking_indent();
+    }
+
     module ramp_negative(){
-        // negative, pipe up
+        // pipe up
         translate([0,heater_tunnel_h,heater_tunnel_w/2-ramp_fudge])
         color("red",0.4)
         cuboid(
@@ -166,15 +173,15 @@ module air_ramp(){
             , anchor=BOTTOM+BACK+LEFT
         );
 
-        // negative, pipe sideways
+        // pipe sideways
         color("red",0.4)
         cuboid(
             [heater_tunnel_w,heater_tunnel_h*2,heater_tunnel_h]
             , anchor=BOTTOM+BACK+LEFT
         );
 
-        // negative, curved portion
-        color("red",0.4)
+        // 90 degree elbow bend
+        color("red",0.6)
         translate([0,0,heater_tunnel_h])
         rotate([0,90,0])
         rotate_extrude(angle=90, convexity=10)
@@ -218,7 +225,7 @@ fudge=0.5;
         //body
         translate([0,0+tunnel_buffer+box_buffer-fudge,fan_box_bottom_thickness])
         cuboid(
-            [fan_box_inner_w,tunnel_l-0.01,fan_box_inner_h],
+            [fan_box_inner_w-component_gap,tunnel_l-0.01,fan_box_inner_h],
             rounding=fan_box_inner_h/8,
             edges=[BOTTOM+LEFT, BOTTOM+RIGHT],
             anchor=BOTTOM
@@ -226,17 +233,17 @@ fudge=0.5;
         
         // locking indents
         copy_mirror([1,0,0])
-        translate([fan_box_inner_w/2,0,fan_box_inner_h-intent_below_topline])
+        translate([fan_box_inner_w/2-component_gap,0,fan_box_inner_h-indent_below_topline])
         locking_indent();
     }
 
 
 }
 
-indent_depth = 0.4;
+indent_depth = 0.6;
 //indent_width = 0.4;
 indent_length = 2.0;
-intent_below_topline = 1.0;
+indent_below_topline = 1.0;
 module locking_indent() {
     color("green")
     rotate([90,0,0])
