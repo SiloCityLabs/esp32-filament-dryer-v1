@@ -118,6 +118,7 @@ module fan_box() {
         );
         
         // fan cuts
+        mirror([1,0,0])
         translate([0,-fan_box_inner_l/2+fan_overall/2+box_buffer,fan_box_bottom_thickness]) {
             // fan screw holes
             translate([fan_screw_1x,fan_screw_1y,0])
@@ -206,6 +207,8 @@ fudge=0.5;
     difference() {
         tunnel_housing();
     
+        // air tunnel, expanding from fan size to heater size
+        mirror([1,0,0])
         color("red", 0.4)
         translate([ 0, tunnel_y, heater_tunnel_h/2+fan_box_bottom_thickness+fan_box_wall_thickness ])
         rotate([90,0,0])
