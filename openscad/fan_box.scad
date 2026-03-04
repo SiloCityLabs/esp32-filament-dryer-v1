@@ -144,23 +144,43 @@ module fan_box() {
 }
 
 module air_ramp(){
-    // air ramp. Turn air 90deg
-    //TODO: try making a warped rect-tube programmatically
-    translate([0,fan_box_inner_l/2-ramp_radius,fan_box_bottom_thickness + ramp_radius])
-    rotate([0,90,0]) {
-        // outer, wider, ramp
-        quarter_pipe(r=ramp_radius, h = fan_box_inner_w, wall=fan_box_wall_thickness);
+    ramp_y=45;
+    ramp_fudge=2;
+    difference() {
+        translate([0,fan_box_inner_l/2-ramp_y,fan_box_bottom_thickness])
+        cuboid([fan_box_inner_w,ramp_y,fan_box_inner_h], anchor=BOTTOM+FRONT);
 
-        // lid of ramp tunnel
-        translate([-ramp_radius-fan_box_wall_thickness,-ramp_radius,0])
-        quarter_pipe(r=ramp_radius, h = fan_box_inner_w, wall=fan_box_wall_thickness);
-        
-        //endcaps
-        //*cyl(h = fan_box_wall_thickness, r = ramp_radius, anchor=CENTER );
+        translate([-heater_tunnel_w/2,
+            fan_box_inner_l/2-heater_tunnel_h-fan_box_wall_thickness,
+            fan_box_bottom_thickness
+        ])
+        ramp_negative();
     }
-    // straight up wall
-    translate([0,fan_box_inner_l/2,fan_box_bottom_thickness+ramp_radius])
-    cuboid([fan_box_inner_w,fan_box_wall_thickness,ramp_radius], anchor=BOTTOM+FRONT);
+
+    module ramp_negative(){
+        // negative, pipe up
+        translate([0,heater_tunnel_h,heater_tunnel_w/2-ramp_fudge])
+        color("red",0.4)
+        cuboid(
+            [heater_tunnel_w,heater_tunnel_h,heater_tunnel_h*2]
+            , anchor=BOTTOM+BACK+LEFT
+        );
+
+        // negative, pipe sideways
+        color("red",0.4)
+        cuboid(
+            [heater_tunnel_w,heater_tunnel_h*2,heater_tunnel_h]
+            , anchor=BOTTOM+BACK+LEFT
+        );
+
+        // negative, curved portion
+        color("red",0.4)
+        translate([0,0,heater_tunnel_h])
+        rotate([0,90,0])
+        rotate_extrude(angle=90, convexity=10)
+        square([heater_tunnel_h,heater_tunnel_w]);
+    }
+    
 }
 
 // widens from the from output size to the heater size
