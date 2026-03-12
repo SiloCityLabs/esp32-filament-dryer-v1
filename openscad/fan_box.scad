@@ -12,7 +12,7 @@ include <BOSL2/shapes3d.scad>
 $fn = 50;
 
 /* [box] */
-fan_box_inner_w = 85.0;
+fan_box_inner_w = 95.0;
 fan_box_inner_h = 40.0;
 fan_box_inner_l = 150.0;
 //needs to be thick enough for screws to bite into, or to hold hex nuts
@@ -50,9 +50,10 @@ heater_tunnel_h = 24;
 heater_screw_diam = 2.0;
 heater_screw_sep = 90.0;
 
-tunnel_lift = 10.0; // space for frame around heater
-left_hole_from_center = 35.0;
-right_hole_from_center = 30.0;
+tunnel_lift = 5.5; // space for frame around heater
+post_width=3.24; // center-ish frame piece that I used for measuring ref
+right_hole_from_center = 36.0-post_width;
+left_hole_from_center = 43.0-post_width;
 
 /* [air ramp] */
 
@@ -65,8 +66,11 @@ tunnel_l = fan_box_inner_l - ramp_l - fan_overall - box_buffer - tunnel_buffer;
 tunnel_color = "seagreen";
 
 
-
+/* [debug] */
 fan_debug_cut=false;
+box_debug_cut=false;
+separate_parts=false;
+separate_move = separate_parts?1:0;
 difference(){
     fan_box();
 
@@ -89,29 +93,27 @@ module fan_box() {
     // box and fan cuts
     color("azure")
     difference() {
-        //box
-        *
-        cuboid(
-            [ fan_box_inner_w+fan_box_wall_thickness*2, 
-            fan_box_inner_l+fan_box_wall_thickness*2, 
-            fan_box_inner_h+fan_box_wall_thickness+fan_box_bottom_thickness ],
-            anchor=BOTTOM
-        );
-        //floor only, box disabled
-        *cuboid(
-            [ fan_box_inner_w+fan_box_wall_thickness*2, 
-            fan_box_inner_l+fan_box_wall_thickness*2, 
-            fan_box_bottom_thickness ],
-            anchor=BOTTOM
-        );
-        //floor and one side for sideways printing
-        translate([-fan_box_wall_thickness,0,0])
-        cuboid(
-            [ fan_box_inner_w+fan_box_wall_thickness, 
-            fan_box_inner_l+fan_box_wall_thickness*2, 
-            fan_box_inner_h+fan_box_wall_thickness+fan_box_bottom_thickness ],
-            anchor=BOTTOM
-        );
+        if(box_debug_cut) {
+            //floor and one side for sideways printing
+            translate([-fan_box_wall_thickness,0,0])
+            cuboid(
+                [ fan_box_inner_w+fan_box_wall_thickness, 
+                fan_box_inner_l+fan_box_wall_thickness*2, 
+                fan_box_inner_h+fan_box_wall_thickness+fan_box_bottom_thickness ],
+                anchor=BOTTOM
+            );
+        } 
+        else {        
+            //box
+            cuboid(
+                [ fan_box_inner_w+fan_box_wall_thickness*2, 
+                fan_box_inner_l+fan_box_wall_thickness*2, 
+                fan_box_inner_h+fan_box_wall_thickness+fan_box_bottom_thickness ],
+                anchor=BOTTOM
+            );
+        }
+
+
 
         //empty the box
         //bottom is thicker for screws to bite into
@@ -142,9 +144,11 @@ module fan_box() {
         }
         
     }
-    *
+    
+    translate([separate_parts? -fan_box_inner_w*1.5:0,0,0])
     fan_tunnel();
     
+    translate([separate_parts? -fan_box_inner_w*1.5:0,separate_parts?20:0,0])
     air_ramp();
 }
 

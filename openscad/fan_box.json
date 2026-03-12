@@ -1,0 +1,36 @@
+{
+    "fileFormatVersion": "1",
+    "parameterSets": {
+        "New set 1": {
+            "$fn": "50",
+            "box_buffer": "3",
+            "box_debug_cut": "true",
+            "component_gap": "0.40000000000000002",
+            "fan_box_bottom_thickness": "1.3999999999999999",
+            "fan_box_inner_h": "40",
+            "fan_box_inner_l": "150",
+            "fan_box_inner_w": "95",
+            "fan_box_wall_thickness": "0.59999999999999998",
+            "fan_debug_cut": "false",
+            "fan_intake_diam": "45",
+            "fan_output_h": "15",
+            "fan_output_w": "20",
+            "fan_output_y_from_center": "0",
+            "fan_overall": "51",
+            "fan_screw_1x": "21.5",
+            "fan_screw_1y": "17.5",
+            "fan_screw_2x": "22",
+            "fan_screw_2y": "20.300000000000001",
+            "fan_screw_diam": "3.6000000000000001",
+            "heater_screw_diam": "2",
+            "heater_screw_sep": "90",
+            "heater_tunnel_h": "24",
+            "heater_tunnel_w": "52",
+            "post_width": "3.2400000000000002",
+            "separate_parts": "true",
+            "tunnel_buffer": "1",
+            "tunnel_color": "seagreen",
+            "tunnel_lift": "5.5"
+        }
+    }
+}
