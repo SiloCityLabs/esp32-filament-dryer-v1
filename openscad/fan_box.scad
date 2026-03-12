@@ -12,8 +12,8 @@ include <BOSL2/shapes3d.scad>
 $fn = 50;
 
 /* [box] */
-fan_box_inner_w = 55.0;
-fan_box_inner_h = 30.0;
+fan_box_inner_w = 85.0;
+fan_box_inner_h = 40.0;
 fan_box_inner_l = 150.0;
 //needs to be thick enough for screws to bite into, or to hold hex nuts
 fan_box_bottom_thickness = 1.4;  // [0.4:0.1:2] 
@@ -50,7 +50,11 @@ heater_tunnel_h = 24;
 heater_screw_diam = 2.0;
 heater_screw_sep = 90.0;
 
-/* air ramp */
+tunnel_lift = 10.0; // space for frame around heater
+left_hole_from_center = 35.0;
+right_hole_from_center = 30.0;
+
+/* [air ramp] */
 
 //space between fan and tunnel
 tunnel_buffer = 1;
@@ -59,6 +63,8 @@ ramp_radius = heater_tunnel_h;
 ramp_l = ramp_radius * 2;
 tunnel_l = fan_box_inner_l - ramp_l - fan_overall - box_buffer - tunnel_buffer;
 tunnel_color = "seagreen";
+
+
 
 fan_debug_cut=false;
 difference(){
@@ -136,7 +142,7 @@ module fan_box() {
         }
         
     }
-    
+    *
     fan_tunnel();
     
     air_ramp();
@@ -146,20 +152,37 @@ module air_ramp(){
     ramp_y=45;
     ramp_fudge=2;
     difference() {
-        ramp_box();
+        union(){
+            ramp_box();
+            
+            // heater alignment pin
+            translate([0,
+                fan_box_inner_l/2-heater_tunnel_h-fan_box_wall_thickness,
+                fan_box_bottom_thickness + tunnel_lift + heater_tunnel_h/2
+            ])
+            heater_pins();
+        }
 
         translate([-heater_tunnel_w/2,
             fan_box_inner_l/2-heater_tunnel_h-fan_box_wall_thickness,
             fan_box_bottom_thickness
         ])
         ramp_negative();
+        
+        // heater screw holes
+        translate([0,
+            fan_box_inner_l/2-heater_tunnel_h-fan_box_wall_thickness,
+            fan_box_bottom_thickness + tunnel_lift + heater_tunnel_h/2
+        ])
+        heater_screw_holes();
     }
 
     module ramp_box(){
-
+        //box shape
         translate([0,fan_box_inner_l/2-ramp_y,fan_box_bottom_thickness])
         cuboid([fan_box_inner_w-component_gap*2,ramp_y,fan_box_inner_h], anchor=BOTTOM+FRONT);
 
+        // locking indents
         copy_mirror([1,0,0])
         translate([fan_box_inner_w/2-component_gap,fan_box_inner_l/2-ramp_y/2,fan_box_inner_h-indent_below_topline])
         locking_indent();
@@ -167,7 +190,7 @@ module air_ramp(){
 
     module ramp_negative(){
         // pipe up
-        translate([0,heater_tunnel_h,heater_tunnel_w/2-ramp_fudge])
+        translate([0,heater_tunnel_h,heater_tunnel_w/2-ramp_fudge+tunnel_lift])
         color("red",0.4)
         cuboid(
             [heater_tunnel_w,heater_tunnel_h,heater_tunnel_h*2]
@@ -176,6 +199,7 @@ module air_ramp(){
 
         // pipe sideways
         color("red",0.4)
+        translate([0,0,tunnel_lift])
         cuboid(
             [heater_tunnel_w,heater_tunnel_h*2,heater_tunnel_h]
             , anchor=BOTTOM+BACK+LEFT
@@ -183,20 +207,35 @@ module air_ramp(){
 
         // 90 degree elbow bend
         color("red",0.6)
-        translate([0,0,heater_tunnel_h])
+        translate([0,0,heater_tunnel_h+tunnel_lift])
         rotate([0,90,0])
         rotate_extrude(angle=90, convexity=10)
         square([heater_tunnel_h,heater_tunnel_w]);
     }
     
+    
+}
+module heater_screw_holes(){
+    translate([-left_hole_from_center,0,0])
+    rotate([90,0,0])
+    cyl(d=heater_screw_diam, 
+        l=200 //can't be f'd to align it
+    );
+}
+module heater_pins(){
+    translate([right_hole_from_center,0,0])
+    rotate([90,0,0])
+    cyl(d=heater_screw_diam, 
+        l=50 //can't be f'd to align it
+    );
 }
 
-// widens from the from output size to the heater size
+// widens from the fan output to the heater
 module fan_tunnel(){
 fudge=0.5;
     fan_output_from_floor = 2.2;
     tunnel_rounding = 4.0;
-    fan_output_y_from_center = -(heater_tunnel_h-fan_output_h)/2+fan_output_from_floor;
+    fan_output_y_from_center = -(heater_tunnel_h-fan_output_h)/2+fan_output_from_floor-tunnel_lift;
     // fan tunnel. Take air from fan to heater
     // aligning this is a little whack
     tunnel_y = -fan_box_inner_l/2 + tunnel_l + fan_overall + box_buffer+tunnel_buffer;
@@ -210,7 +249,7 @@ fudge=0.5;
         // air tunnel, expanding from fan size to heater size
         mirror([1,0,0])
         color("red", 0.4)
-        translate([ 0, tunnel_y, heater_tunnel_h/2+fan_box_bottom_thickness+fan_box_wall_thickness ])
+        translate([ 0, tunnel_y, heater_tunnel_h/2+tunnel_lift+fan_box_bottom_thickness+fan_box_wall_thickness ])
         rotate([90,0,0])
         prismoid(
             size1=[heater_tunnel_w,heater_tunnel_h], 
@@ -229,7 +268,7 @@ fudge=0.5;
         translate([0,0+tunnel_buffer+box_buffer-fudge,fan_box_bottom_thickness])
         cuboid(
             [fan_box_inner_w-component_gap,tunnel_l-0.01,fan_box_inner_h],
-            rounding=fan_box_inner_h/8,
+            rounding=fan_box_inner_h/16,
             edges=[BOTTOM+LEFT, BOTTOM+RIGHT],
             anchor=BOTTOM
         );
