@@ -44,16 +44,20 @@ fan_output_y_from_center = 0;
 box_buffer = 3;
 
 /* [heater]  */
-heater_tunnel_w = 52;
+heater_tunnel_w = 55.5;
 heater_tunnel_h = 24;
 
-heater_screw_diam = 2.0;
-heater_screw_sep = 90.0;
+heater_screw_diam = 3.5;
+heater_pin_diam = 3.9;
+heater_screw_sep = 83.0;
 
 tunnel_lift = 5.5; // space for frame around heater
 post_width=3.24; // center-ish frame piece that I used for measuring ref
 right_hole_from_center = 36.0-post_width;
 left_hole_from_center = 43.0-post_width;
+main_hole_from_side=16.2;
+secondary_hole_from_side=10.2;
+heater_peg_length = 15.0; // measured 7.75mm from base so make it longer
 
 /* [air ramp] */
 
@@ -143,6 +147,9 @@ module fan_box() {
             );
         }
         
+        translate([0,0,fan_box_inner_h-indent_below_topline])
+        locking_recess();
+        
     }
     
     translate([separate_parts? -fan_box_inner_w*1.5:0,0,0])
@@ -151,6 +158,8 @@ module fan_box() {
     translate([separate_parts? -fan_box_inner_w*1.5:0,separate_parts?20:0,0])
     air_ramp();
 }
+
+
 
 module air_ramp(){
     ramp_y=45;
@@ -161,7 +170,7 @@ module air_ramp(){
             
             // heater alignment pin
             translate([0,
-                fan_box_inner_l/2-heater_tunnel_h-fan_box_wall_thickness,
+                fan_box_inner_l/2-ramp_y,
                 fan_box_bottom_thickness + tunnel_lift + heater_tunnel_h/2
             ])
             heater_pins();
@@ -220,18 +229,30 @@ module air_ramp(){
     
 }
 module heater_screw_holes(){
-    translate([-left_hole_from_center,0,0])
+    translate([-heater_tunnel_w/2-main_hole_from_side,0,0])
     rotate([90,0,0])
     cyl(d=heater_screw_diam, 
         l=200 //can't be f'd to align it
     );
 }
 module heater_pins(){
-    translate([right_hole_from_center,0,0])
+    translate([heater_tunnel_w/2+secondary_hole_from_side,0,0])
     rotate([90,0,0])
-    cyl(d=heater_screw_diam, 
-        l=50 //can't be f'd to align it
+    cyl(d1=heater_pin_diam, 
+        d2=heater_pin_diam*0.9, //taper 
+        l=heater_peg_length
+        , anchor=BOTTOM
     );
+    // flared base
+    translate([heater_tunnel_w/2+secondary_hole_from_side,0,0])
+    rotate([90,0,0])
+    cyl(d1=heater_pin_diam*2, 
+        d2=heater_pin_diam, 
+        l=heater_peg_length/4
+        , anchor=BOTTOM
+    );
+    
+    
 }
 
 // widens from the fan output to the heater
@@ -296,6 +317,13 @@ module locking_indent() {
     cyl(l=indent_length, 
         r=indent_depth, 
         rounding=indent_depth/2.1,
+        anchor=CENTER
+    );
+}
+module locking_recess(){
+    color("red")
+    cuboid([fan_box_inner_w+indent_depth,fan_box_inner_l+indent_depth,indent_depth*2],
+        rounding=indent_depth,
         anchor=CENTER
     );
 }
