@@ -165,29 +165,13 @@ module air_ramp(){
     ramp_y=30;
     ramp_fudge=2;
     difference() {
-        union(){
-            ramp_box();
-            
-            // heater alignment pin
-            translate([0,
-                fan_box_inner_l/2-ramp_y,
-                fan_box_bottom_thickness + tunnel_lift + heater_tunnel_h/2
-            ])
-            heater_pins();
-        }
-
+        ramp_box();
+        
         translate([-heater_tunnel_w/2,
             fan_box_inner_l/2-heater_tunnel_h-fan_box_wall_thickness,
             fan_box_bottom_thickness
         ])
         ramp_negative();
-        
-        // heater screw holes
-        translate([0,
-            fan_box_inner_l/2-heater_tunnel_h-fan_box_wall_thickness,
-            fan_box_bottom_thickness + tunnel_lift + heater_tunnel_h/2
-        ])
-        heater_screw_holes();
     }
 
     module ramp_box(){
@@ -237,7 +221,7 @@ module heater_screw_holes(){
 }
 module heater_pins(){
     translate([heater_tunnel_w/2+secondary_hole_from_side,0,0])
-    rotate([90,0,0])
+    rotate([-90,0,0])
     cyl(d1=heater_pin_diam, 
         d2=heater_pin_diam*0.9, //taper 
         l=heater_peg_length
@@ -245,7 +229,7 @@ module heater_pins(){
     );
     // flared base
     translate([heater_tunnel_w/2+secondary_hole_from_side,0,0])
-    rotate([90,0,0])
+    rotate([-90,0,0])
     cyl(d1=heater_pin_diam*2, 
         d2=heater_pin_diam, 
         l=heater_peg_length/4
@@ -269,9 +253,25 @@ fudge=0.5;
     bridge_rounding_in = fan_output_h / 2;
     
     difference() {
-        tunnel_housing();
-    
+        union(){
+            tunnel_housing();
+            
+            // heater alignment pin
+            translate([0,
+                tunnel_l/2,
+                fan_box_bottom_thickness + tunnel_lift + heater_tunnel_h/2
+            ])
+            heater_pins();
+        }
+        
         tunnel_cut();
+        
+        // heater screw holes
+        translate([0,
+            tunnel_y,
+            fan_box_bottom_thickness + tunnel_lift + heater_tunnel_h/2
+        ])
+        heater_screw_holes();
     }
     // vane to direct air because fan input is offset
     vane_angle=25;
