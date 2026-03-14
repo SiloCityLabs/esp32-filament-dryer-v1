@@ -163,7 +163,8 @@ module fan_box() {
 
 module air_ramp(){
     ramp_y=30;
-    ramp_fudge=2;
+    ramp_fudge=1;
+        
     difference() {
         ramp_box();
         
@@ -187,7 +188,7 @@ module air_ramp(){
 
     module ramp_negative(){
         // pipe up
-        translate([0,heater_tunnel_h,heater_tunnel_w/2-ramp_fudge+tunnel_lift])
+        translate([0,heater_tunnel_h,heater_tunnel_w/2+ramp_fudge]) // not perfect
         color("red",0.4)
         cuboid(
             [heater_tunnel_w,heater_tunnel_h,heater_tunnel_h*2]
@@ -197,9 +198,14 @@ module air_ramp(){
         // pipe sideways
         color("red",0.4)
         translate([0,0,tunnel_lift])
-        cuboid(
-            [heater_tunnel_w,heater_tunnel_h*2,heater_tunnel_h]
-            , anchor=BOTTOM+BACK+LEFT
+        rotate([90,0,0])
+        prismoid(
+            size1=[heater_tunnel_w,heater_tunnel_h], 
+            size2=[heater_tunnel_w,heater_tunnel_h],
+            //wall=fan_box_wall_thickness, 
+            h=ramp_y-heater_tunnel_h,
+            shift=[heater_x_offset, 0],
+            anchor=FRONT+BOTTOM+LEFT
         );
 
         // 90 degree elbow bend
@@ -257,7 +263,7 @@ fudge=0.5;
             tunnel_housing();
             
             // heater alignment pin
-            translate([0,
+            translate([heater_x_offset,
                 tunnel_l/2,
                 fan_box_bottom_thickness + tunnel_lift + heater_tunnel_h/2
             ])
@@ -267,7 +273,7 @@ fudge=0.5;
         tunnel_cut();
         
         // heater screw holes
-        translate([0,
+        translate([heater_x_offset,
             tunnel_y,
             fan_box_bottom_thickness + tunnel_lift + heater_tunnel_h/2
         ])
@@ -277,7 +283,7 @@ fudge=0.5;
     vane_angle=25;
     vane_thickness=1.2;
     min_vane_thickness=0.6;
-    translate([fan_output_w/2,0,fan_box_bottom_thickness])
+    translate([fan_output_w/2+heater_x_offset,0,fan_box_bottom_thickness])
     rotate([90,0,vane_angle])
     prismoid(size1=[vane_thickness, fan_box_inner_h*0.95], 
         size2=[min_vane_thickness, fan_box_inner_h*0.95],
@@ -307,14 +313,14 @@ module tunnel_cut(){
         // air tunnel, expanding from fan size to heater size
         mirror([1,0,0])
         color("red", 0.4)
-        translate([ 0, tunnel_l/2+0.5, heater_tunnel_h/2+tunnel_lift+fan_box_bottom_thickness+fan_box_wall_thickness ])
+        translate([ -heater_x_offset, tunnel_l/2+0.5, heater_tunnel_h/2+tunnel_lift+fan_box_bottom_thickness+fan_box_wall_thickness ])
         rotate([90,0,0])
         prismoid(
             size1=[heater_tunnel_w,heater_tunnel_h], 
             size2=[fan_output_w,fan_output_h],
             //wall=fan_box_wall_thickness, 
             h=tunnel_l+fudge,
-            shift=[-fan_output_x_from_center, fan_output_y_from_center],
+            shift=[-fan_output_x_from_center-heater_x_offset, fan_output_y_from_center],
             //chamfer1=[bridge_rounding_out,0,0,bridge_rounding_out],
             //rounding2=[bridge_rounding_in,tunnel_rounding/4,tunnel_rounding/4,bridge_rounding_in],
             anchor=BOTTOM // I want to achor by the top for easy alignment, but "shift" moves the top
