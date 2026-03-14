@@ -17,9 +17,13 @@ fan_box_inner_h = 40.0;
 fan_box_inner_l = 160.0;
 //needs to be thick enough for screws to bite into, or to hold hex nuts
 fan_box_bottom_thickness = 1.4;  // [0.4:0.1:2] 
-fan_box_wall_thickness = 0.6; // [0.4:0.1:2] 
-component_gap = 0.4;
+fan_box_wall_thickness = 1.0; // [0.4:0.1:2] 
+component_gap = 0.4;  // [0.0:0.1:0.8] 
 
+
+indent_depth = 0.8;
+indent_length = 6.0;
+indent_below_topline = 3.0;
 
 /* [fan] */
 //fan screw offset from centerline
@@ -31,7 +35,6 @@ fan_screw_2x=22.0; // there's a plastic bit that sticks out so this needs a litt
 fan_screw_2y=20.3;
 //fan overall width
 fan_overall = 51.0;
-fan_screw_diam = 3.6;
 //hole on bottom
 fan_intake_diam = 45.0;
 //fan output for tunnel
@@ -42,6 +45,9 @@ fan_output_x_from_center = fan_overall/2 - fan_output_w/2;
 fan_output_y_from_center = 0;
 // space between back wall and fan
 box_buffer = 3;
+
+fan_screw_diam = 3.6;
+fan_screw_post_length = 4.2;
 
 /* [heater]  */
 heater_tunnel_w = 55.5;
@@ -96,28 +102,16 @@ module debug_cuts(){
 
 module fan_box() {
 
-    // box and fan cuts
+    // box and some cutouts
     color("azure")
     difference() {
-        if(box_debug_cut) {
-            //floor and one side for sideways printing
-            translate([-fan_box_wall_thickness,0,0])
-            cuboid(
-                [ fan_box_inner_w+fan_box_wall_thickness, 
-                fan_box_inner_l+fan_box_wall_thickness*2, 
-                fan_box_inner_h+fan_box_wall_thickness+fan_box_bottom_thickness ],
-                anchor=BOTTOM
-            );
-        } 
-        else {        
-            //box
-            cuboid(
-                [ fan_box_inner_w+fan_box_wall_thickness*2, 
-                fan_box_inner_l+fan_box_wall_thickness*2, 
-                fan_box_inner_h+fan_box_wall_thickness+fan_box_bottom_thickness ],
-                anchor=BOTTOM
-            );
-        }
+        //box
+        cuboid(
+            [ fan_box_inner_w+fan_box_wall_thickness*2, 
+            fan_box_inner_l+fan_box_wall_thickness*2, 
+            fan_box_inner_h+fan_box_wall_thickness+fan_box_bottom_thickness ],
+            anchor=BOTTOM
+        );
 
         //empty the box
         //bottom is thicker for screws to bite into
@@ -129,6 +123,24 @@ module fan_box() {
         
         );
         
+        translate([0,0,fan_box_inner_h-indent_below_topline])
+        locking_recess();
+    }
+    
+    
+    difference(){
+        union(){
+            // screw posts
+            mirror([1,0,0])
+            translate([0,-fan_box_inner_l/2+fan_overall/2+box_buffer,fan_box_bottom_thickness]){
+                translate([fan_screw_1x,fan_screw_1y,0])
+                fan_screw_post();
+                translate([-fan_screw_2x,-fan_screw_2y,0])
+                fan_screw_post();
+            }
+        
+        }
+        
         // fan cuts
         mirror([1,0,0])
         translate([0,-fan_box_inner_l/2+fan_overall/2+box_buffer,fan_box_bottom_thickness]) {
@@ -138,18 +150,7 @@ module fan_box() {
             //fan_screw_2x
             translate([-fan_screw_2x,-fan_screw_2y,0])
             fan_screw_hole();
-            
-            //fan intake hole
-            *cyl(
-                l=fan_box_bottom_thickness*3,
-                d=fan_intake_diam,
-                anchor=CENTER
-            );
         }
-        
-        translate([0,0,fan_box_inner_h-indent_below_topline])
-        locking_recess();
-        
     }
     
     translate([separate_parts? -fan_box_inner_w*1.5:0, tunnel_y ,0])
@@ -263,7 +264,7 @@ fudge=0.5;
             
             // heater alignment pin
             translate([heater_x_offset,
-                tunnel_l/2,
+                tunnel_l/2-0.1,
                 fan_box_bottom_thickness + tunnel_lift + heater_tunnel_h/2
             ])
             heater_pins();
@@ -295,7 +296,7 @@ fudge=0.5;
         translate([0,0,fan_box_bottom_thickness])
         cuboid(
             [fan_box_inner_w-component_gap,tunnel_l-0.01,fan_box_inner_h],
-            rounding=fan_box_inner_h/16,
+            chamfer=fan_box_inner_h/16,
             edges=[BOTTOM+LEFT, BOTTOM+RIGHT],
             anchor=BOTTOM
         );
@@ -320,33 +321,34 @@ module tunnel_cut(){
             //wall=fan_box_wall_thickness, 
             h=tunnel_l+fudge,
             shift=[-fan_output_x_from_center-heater_x_offset, fan_output_y_from_center],
-            //chamfer1=[bridge_rounding_out,0,0,bridge_rounding_out],
-            //rounding2=[bridge_rounding_in,tunnel_rounding/4,tunnel_rounding/4,bridge_rounding_in],
             anchor=BOTTOM // I want to achor by the top for easy alignment, but "shift" moves the top
         );
 }
 
 }
 
-indent_depth = 0.6;
-//indent_width = 0.4;
-indent_length = 2.0;
-indent_below_topline = 1.0;
+
 module locking_indent() {
     color("green")
     rotate([90,0,0])
     cyl(l=indent_length, 
         r=indent_depth, 
-        rounding=indent_depth/2.1,
+        rounding=indent_depth/2,
         anchor=CENTER
     );
 }
+
 module locking_recess(){
     color("red")
-    cuboid([fan_box_inner_w+indent_depth,fan_box_inner_l+indent_depth,indent_depth*2],
-        rounding=indent_depth,
-        anchor=CENTER
-    );
+    minkowski() {
+        linear_extrude(height=0.01)
+        rect([fan_box_inner_w,fan_box_inner_l],
+            chamfer=fan_box_inner_l/20, //cut the corner
+            anchor=CENTER
+        );
+        //rounding
+        sphere(r=indent_depth);
+    }
 }
 
 module quarter_pipe(r = 5, h = 10, wall = 1) {
@@ -361,9 +363,17 @@ module quarter_pipe(r = 5, h = 10, wall = 1) {
 
 module fan_screw_hole() {
     cyl(
-        l=fan_box_bottom_thickness*3,
+        l=fan_screw_post_length*3,
         d=fan_screw_diam,
-        anchor=CENTER
+        anchor=BOTTOM+CENTER
+    );
+}
+module fan_screw_post() {
+
+    cyl(
+        l=fan_screw_post_length,
+        d=fan_screw_diam*2,
+        anchor=BOTTOM
     );
 }
 
