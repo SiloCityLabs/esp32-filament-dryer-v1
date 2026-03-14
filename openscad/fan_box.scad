@@ -14,7 +14,7 @@ $fn = 50;
 /* [box] */
 fan_box_inner_w = 95.0;
 fan_box_inner_h = 40.0;
-fan_box_inner_l = 150.0;
+fan_box_inner_l = 160.0;
 //needs to be thick enough for screws to bite into, or to hold hex nuts
 fan_box_bottom_thickness = 1.4;  // [0.4:0.1:2] 
 fan_box_wall_thickness = 0.6; // [0.4:0.1:2] 
@@ -49,14 +49,12 @@ heater_tunnel_h = 24;
 
 heater_screw_diam = 3.5;
 heater_pin_diam = 3.9;
-heater_screw_sep = 83.0;
+heater_screw_sep = 83.0; // size ref
+heater_thickness = 24.2; // size ref
 
 heater_x_offset = 2.5;
 
 tunnel_lift = 5.5; // space for frame around heater
-post_width=3.24; // center-ish frame piece that I used for measuring ref
-right_hole_from_center = 36.0-post_width;
-left_hole_from_center = 43.0-post_width;
 main_hole_from_side=16.2;
 secondary_hole_from_side=10.2;
 heater_peg_length = 15.0; // measured 7.75mm from base so make it longer
@@ -69,6 +67,8 @@ tunnel_buffer = 1;
 ramp_radius = heater_tunnel_h;
 ramp_l = ramp_radius * 2;
 tunnel_l = 30;
+// aligning this tunnel is a little whack
+tunnel_y = -fan_box_inner_l/2 + tunnel_l/2 + fan_overall + box_buffer+tunnel_buffer;
 tunnel_color = "seagreen";
 
 
@@ -152,7 +152,7 @@ module fan_box() {
         
     }
     
-    translate([separate_parts? -fan_box_inner_w*1.5:0,0,0])
+    translate([separate_parts? -fan_box_inner_w*1.5:0, tunnel_y ,0])
     fan_tunnel();
     
     translate([separate_parts? -fan_box_inner_w*1.5:0,separate_parts?20:0,0])
@@ -245,15 +245,14 @@ module heater_pins(){
     
 }
 
+
 // widens from the fan output to the heater
 module fan_tunnel(){
 fudge=0.5;
     fan_output_from_floor = 2.2;
     tunnel_rounding = 4.0;
     fan_output_y_from_center = -(heater_tunnel_h-fan_output_h)/2+fan_output_from_floor-tunnel_lift;
-    // fan tunnel. Take air from fan to heater
-    // aligning this is a little whack
-    tunnel_y = -fan_box_inner_l/2 + tunnel_l + fan_overall + box_buffer+tunnel_buffer;
+    
     // arch this for printability
     bridge_rounding_out = heater_tunnel_h / 2;
     bridge_rounding_in = fan_output_h / 2;
@@ -274,7 +273,7 @@ fudge=0.5;
         
         // heater screw holes
         translate([heater_x_offset,
-            tunnel_y,
+            0,
             fan_box_bottom_thickness + tunnel_lift + heater_tunnel_h/2
         ])
         heater_screw_holes();
