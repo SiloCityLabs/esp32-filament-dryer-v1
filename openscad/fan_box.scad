@@ -40,9 +40,11 @@ fan_intake_diam = 45.0;
 //fan output for tunnel
 fan_output_w = 20.0;
 fan_output_h = 15.0;
-fan_output_x_from_center = fan_overall/2 - fan_output_w/2;
-//todo: align tunnel vertically, then adjust this y-shift
-fan_output_y_from_center = 0;
+// tune horizontal alignment of the fan hole
+fan_shift_x=-20;
+fan_output_x_from_center = fan_overall/2 - fan_output_w/2 + fan_shift_x;
+// tune vertical alignment of the fan hole
+fan_output_from_floor = 2.7;
 // space between back wall and fan
 box_buffer = 3;
 
@@ -59,6 +61,7 @@ heater_screw_sep = 83.0; // size ref
 heater_thickness = 24.2; // size ref
 
 heater_x_offset = 2.5;
+heater_cable_r=3;
 
 tunnel_lift = 5.5; // space for frame around heater
 main_hole_from_side=16.2;
@@ -132,7 +135,7 @@ module fan_box() {
         union(){
             // screw posts
             mirror([1,0,0])
-            translate([0,-fan_box_inner_l/2+fan_overall/2+box_buffer,fan_box_bottom_thickness]){
+            translate([-fan_shift_x,-fan_box_inner_l/2+fan_overall/2+box_buffer,fan_box_bottom_thickness]){
                 translate([fan_screw_1x,fan_screw_1y,0])
                 fan_screw_post();
                 translate([-fan_screw_2x,-fan_screw_2y,0])
@@ -143,7 +146,7 @@ module fan_box() {
         
         // fan cuts
         mirror([1,0,0])
-        translate([0,-fan_box_inner_l/2+fan_overall/2+box_buffer,fan_box_bottom_thickness]) {
+        translate([-fan_shift_x,-fan_box_inner_l/2+fan_overall/2+box_buffer,fan_box_bottom_thickness]) {
             // fan screw holes
             translate([fan_screw_1x,fan_screw_1y,0])
             fan_screw_hole();
@@ -248,9 +251,9 @@ module heater_pins(){
 
 
 // widens from the fan output to the heater
+// comes with alignment pin
 module fan_tunnel(){
 fudge=0.5;
-    fan_output_from_floor = 2.2;
     tunnel_rounding = 4.0;
     fan_output_y_from_center = -(heater_tunnel_h-fan_output_h)/2+fan_output_from_floor-tunnel_lift;
     
@@ -270,7 +273,9 @@ fudge=0.5;
             heater_pins();
         }
         
+        // main air tunnel
         tunnel_cut();
+        
         
         // heater screw holes
         translate([heater_x_offset,
@@ -278,6 +283,19 @@ fudge=0.5;
             fan_box_bottom_thickness + tunnel_lift + heater_tunnel_h/2
         ])
         heater_screw_holes();
+        
+        translate([fan_box_inner_w/2-alignment_pin_d*2,-tunnel_l/2+alignment_pin_d,fan_box_bottom_thickness-0.05])
+        scale([1.10, 1.05, 1.10])
+        alignment_pin();
+        
+        // slots for heater cables
+        translate([-fan_box_inner_w/2+component_gap,0,fan_box_inner_h/4])
+        rotate([90,0,0])
+        cyl(r=heater_cable_r,l=tunnel_l*2);
+        
+        translate([-fan_box_inner_w/2+component_gap,0,fan_box_inner_h/1.3])
+        rotate([90,0,0])
+        cyl(r=heater_cable_r,l=tunnel_l*2);
     }
     // vane to direct air because fan input is offset
     vane_angle=25;
@@ -295,7 +313,7 @@ fudge=0.5;
         //body
         translate([0,0,fan_box_bottom_thickness])
         cuboid(
-            [fan_box_inner_w-component_gap,tunnel_l-0.01,fan_box_inner_h],
+            [fan_box_inner_w-component_gap*2,tunnel_l-0.01,fan_box_inner_h],
             chamfer=fan_box_inner_h/16,
             edges=[BOTTOM+LEFT, BOTTOM+RIGHT],
             anchor=BOTTOM
@@ -303,13 +321,13 @@ fudge=0.5;
         
         // locking indents
         copy_mirror([1,0,0])
-        translate([fan_box_inner_w/2-component_gap,0,fan_box_inner_h-indent_below_topline])
+        translate([fan_box_inner_w/2-component_gap*2,0,fan_box_inner_h-indent_below_topline])
         locking_indent();
     }
     
 
-//tunnel_cut();
-module tunnel_cut(){
+    //tunnel_cut();
+    module tunnel_cut(){
         // air tunnel, expanding from fan size to heater size
         mirror([1,0,0])
         color("red", 0.4)
@@ -320,11 +338,28 @@ module tunnel_cut(){
             size2=[fan_output_w,fan_output_h],
             //wall=fan_box_wall_thickness, 
             h=tunnel_l+fudge,
-            shift=[-fan_output_x_from_center-heater_x_offset, fan_output_y_from_center],
+            shift=[-fan_output_x_from_center-heater_x_offset, fan_output_y_from_center-tunnel_lift+fan_screw_post_length],
             anchor=BOTTOM // I want to achor by the top for easy alignment, but "shift" moves the top
         );
+    }
+    
+    translate([fan_box_inner_w/2-alignment_pin_d*2,-tunnel_l/2+alignment_pin_d,fan_box_bottom_thickness-0.05])
+    alignment_pin();
+    
 }
 
+// a peg for positioning
+alignment_pin_d=4;
+alignment_pin_l=4;
+alignment_pin_chamfer=(alignment_pin_l>alignment_pin_d)?alignment_pin_d/4:alignment_pin_l/4; 
+module alignment_pin() {
+    cyl(
+        l=alignment_pin_l,
+        d=alignment_pin_d,
+        chamfer2=alignment_pin_chamfer,
+        chamfer1=-alignment_pin_chamfer/2,
+        anchor=BOTTOM
+    );
 }
 
 
