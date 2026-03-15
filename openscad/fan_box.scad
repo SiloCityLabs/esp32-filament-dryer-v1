@@ -159,8 +159,19 @@ module fan_box() {
     translate([separate_parts? -fan_box_inner_w*1.5:0, tunnel_y ,0])
     fan_tunnel();
     
+
+    
     translate([separate_parts? -fan_box_inner_w*1.5:0,separate_parts?20:0,0])
     air_ramp();
+    translate([fan_box_inner_w/2-alignment_pin_d*2,-tunnel_l/2+alignment_pin_d,fan_box_bottom_thickness-0.05])
+    alignment_pin();
+
+    
+    translate([fan_box_inner_w/2-alignment_pin_d*2,
+    fan_box_inner_l/2-heater_tunnel_h,
+    fan_box_bottom_thickness-0.05])
+    alignment_pin();
+        
 }
 
 
@@ -177,6 +188,14 @@ module air_ramp(){
             fan_box_bottom_thickness
         ])
         ramp_negative();
+        
+        translate([fan_box_inner_w/2-alignment_pin_d*2,
+            fan_box_inner_l/2-heater_tunnel_h,
+            fan_box_bottom_thickness-0.05])
+        scale([1.10, 1.05, 1.10])
+        alignment_pin();
+        
+        
     }
 
     module ramp_box(){
@@ -245,8 +264,22 @@ module heater_pins(){
         l=heater_peg_length/4
         , anchor=BOTTOM
     );
+}
+module heater_ledge(){
+
+    block_blah = 7.8;
+    tab_height=4.1;
+    tab_overhang=2.6;
+    translate([heater_tunnel_w/2+secondary_hole_from_side,0,0])
+    cuboid([block_blah,tab_height,block_blah],anchor=FRONT);
+*    
+    translate([heater_tunnel_w/2+secondary_hole_from_side-tab_overhang,tab_height,0])
+    cuboid([block_blah,tab_height,block_blah/2],anchor=FRONT);
     
-    
+    // goofy, trying to avoid 90 deg overhang
+    translate([heater_tunnel_w/2+secondary_hole_from_side-tab_overhang/2,tab_height/3,0])
+    rotate([90,0,0])
+    prismoid(size1=[block_blah+tab_overhang,block_blah/2], size2=[block_blah/2,block_blah/2], h=tab_height, anchor=TOP);
 }
 
 
@@ -266,16 +299,22 @@ fudge=0.5;
             tunnel_housing();
             
             // heater alignment pin
+            *
             translate([heater_x_offset,
                 tunnel_l/2-0.1,
                 fan_box_bottom_thickness + tunnel_lift + heater_tunnel_h/2
             ])
             heater_pins();
+            
+            translate([heater_x_offset,
+                tunnel_l/2-0.1,
+                fan_box_bottom_thickness + tunnel_lift + heater_tunnel_h/2
+            ])
+            heater_ledge();
         }
         
         // main air tunnel
         tunnel_cut();
-        
         
         // heater screw holes
         translate([heater_x_offset,
@@ -283,10 +322,6 @@ fudge=0.5;
             fan_box_bottom_thickness + tunnel_lift + heater_tunnel_h/2
         ])
         heater_screw_holes();
-        
-        translate([fan_box_inner_w/2-alignment_pin_d*2,-tunnel_l/2+alignment_pin_d,fan_box_bottom_thickness-0.05])
-        scale([1.10, 1.05, 1.10])
-        alignment_pin();
         
         // slots for heater cables
         translate([-fan_box_inner_w/2+component_gap,0,fan_box_inner_h/4])
@@ -296,12 +331,16 @@ fudge=0.5;
         translate([-fan_box_inner_w/2+component_gap,0,fan_box_inner_h/1.3])
         rotate([90,0,0])
         cyl(r=heater_cable_r,l=tunnel_l*2);
+        
+        translate([fan_box_inner_w/2-alignment_pin_d*2,-tunnel_l/2+alignment_pin_d,fan_box_bottom_thickness-0.05])
+        alignment_pin();
     }
-    // vane to direct air because fan input is offset
+    // vane to direct air if fan input is offset
     vane_angle=25;
     vane_thickness=1.2;
     min_vane_thickness=0.6;
-    translate([fan_output_w/2+heater_x_offset,0,fan_box_bottom_thickness])
+    *
+    translate([fan_output_w/2+fan_shift_x+heater_x_offset,0,fan_box_bottom_thickness])
     rotate([90,0,vane_angle])
     prismoid(size1=[vane_thickness, fan_box_inner_h*0.95], 
         size2=[min_vane_thickness, fan_box_inner_h*0.95],
@@ -343,8 +382,7 @@ fudge=0.5;
         );
     }
     
-    translate([fan_box_inner_w/2-alignment_pin_d*2,-tunnel_l/2+alignment_pin_d,fan_box_bottom_thickness-0.05])
-    alignment_pin();
+
     
 }
 
